@@ -1,0 +1,11 @@
+{
+    "name": "hexlet/code",
+    "description": "gendiff",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Alexander Dolgov"
+        }
+    ],
+    "require": {}
+}

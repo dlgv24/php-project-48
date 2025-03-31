@@ -20,5 +20,9 @@ DOC;
 
 function run(): void
 {
-    $args = Docopt::handle(DOC, ['version' => 'gendiff 1.0']);
+    $args = Docopt::handle(DOC);
+    foreach ($args as $k => $v) {
+        echo $k . ': ' . json_encode($v) . PHP_EOL;
+    }
+    echo getcwd() . PHP_EOL;
 }

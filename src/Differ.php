@@ -27,36 +27,35 @@ function sortKeys(mixed &$data): void
     }
 }
 
-function diff(mixed $data1, mixed $data2): \stdClass|array|null
+function diff(mixed $data1, mixed $data2): \stdClass|null
 {
-    if (is_object($data1) && is_object($data2)) {
-        $result = new \stdClass();
-        foreach ($data1 as $key => $value) {
-            if (property_exists($data2, $key)) {
-                $diff = diff($value, $data2->$key);
-                if (is_null($diff)) {
-                    if ($value === $data2->$key) {
-                        $result->$key = $value;
-                    } else {
-                        $result->{"- $key"} = $value;
-                        $result->{"+ $key"} = $data2->$key;
-                    }
-                } else {
-                    $result->$key = $diff;
-                }
-            } else {
-                $result->{"- $key"} = $value;
-            }
-            unset($data2->$key);
-        }
-        foreach ($data2 as $key => $value) {
-            $result->{"+ $key"} = $value;
-        }
-        return $result;
-    } elseif (is_array($data1) && is_array($data2)) {
+    if (!is_object($data1) || !is_object($data2)) {
         return null;
     }
-    return null;
+
+    $result = new \stdClass();
+    foreach ($data1 as $key => $value) {
+        if (property_exists($data2, $key)) {
+            $diff = diff($value, $data2->$key);
+            if (is_null($diff)) {
+                if ($value === $data2->$key) {
+                    $result->$key = $value;
+                } else {
+                    $result->{"- $key"} = $value;
+                    $result->{"+ $key"} = $data2->$key;
+                }
+            } else {
+                $result->$key = $diff;
+            }
+        } else {
+            $result->{"- $key"} = $value;
+        }
+        unset($data2->$key);
+    }
+    foreach ($data2 as $key => $value) {
+        $result->{"+ $key"} = $value;
+    }
+    return $result;
 }
 
 function genDiff(string $filename1, string $filename2): mixed

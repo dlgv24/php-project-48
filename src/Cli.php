@@ -1,7 +1,8 @@
 <?php
 
-namespace Code\Cli;
+namespace Differ\Cli;
 
+use Differ\Differ;
 use Docopt;
 
 const DOC = <<<DOC
@@ -21,8 +22,7 @@ DOC;
 function run(): void
 {
     $args = Docopt::handle(DOC);
-    foreach ($args as $k => $v) {
-        echo $k . ': ' . json_encode($v) . PHP_EOL;
+    if ($args['<firstFile>'] !== null && $args['<secondFile>'] !== null) {
+        echo Differ\genDiff($args['<firstFile>'], $args['<secondFile>']) . PHP_EOL;
     }
-    echo getcwd() . PHP_EOL;
 }

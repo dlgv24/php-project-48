@@ -1,4 +1,4 @@
-.PHONY: install validate lint cbf
+.PHONY: install validate lint cbf test test-coverage
 
 install:
 	composer install
@@ -11,3 +11,9 @@ lint:
 
 cbf:
 	composer exec --verbose phpcbf -- --standard=PSR12 src bin
+
+test:
+	composer exec --verbose phpunit
+
+test-coverage:
+	XDEBUG_MODE=coverage composer exec --verbose phpunit -- --coverage-html coverage-report/

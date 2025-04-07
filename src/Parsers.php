@@ -13,19 +13,23 @@ function getFileContent(string $filename): string
     return $content;
 }
 
-function parseJson(string $filename): mixed
+function parse(string $filename): mixed
 {
     $content = getFileContent($filename);
-    $json = json_decode($content);
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        throw new \Exception(json_last_error_msg() . ': ' . $filename);
+    $extension = pathinfo($filename, PATHINFO_EXTENSION);
+    switch ($extension) {
+        case 'json':
+            $result = json_decode($content);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new \Exception(json_last_error_msg() . ': ' . $filename);
+            }
+            break;
+        case 'yml':
+        case 'yaml':
+            $result = Yaml::parse($content, Yaml::PARSE_OBJECT_FOR_MAP);
+            break;
+        default:
+            throw new \Exception("Unsupported extension: {$extenstion}!");
     }
-    return $json;
-}
-
-function parseYaml(string $filename): mixed
-{
-    $content = getFileContent($filename);
-    $yaml = Yaml::parse($content, Yaml::PARSE_OBJECT_FOR_MAP);
-    return $yaml;
+    return $result;
 }

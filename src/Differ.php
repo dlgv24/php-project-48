@@ -61,8 +61,8 @@ function diff(mixed $data1, mixed $data2): \stdClass|null
 function genDiff(string $filename1, string $filename2): mixed
 {
     try {
-        $data1 = Parsers\parseJson($filename1);
-        $data2 = Parsers\parseJson($filename2);
+        $data1 = Parsers\parse($filename1);
+        $data2 = Parsers\parse($filename2);
     } catch (\Exception $e) {
         return $e->getMessage();
     }

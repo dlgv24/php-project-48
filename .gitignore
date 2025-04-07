@@ -1,3 +1,5 @@
 /vendor/
 /.vscode/
 /.idea/
+/coverage-report/
+/.phpunit.cache/

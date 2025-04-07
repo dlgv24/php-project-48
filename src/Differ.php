@@ -59,7 +59,7 @@ function diff(mixed $data1, mixed $data2): \stdClass|null
     return $result;
 }
 
-function genDiff(string $filename1, string $filename2, string $type): mixed
+function genDiff(string $filename1, string $filename2, string $type = 'stylish'): mixed
 {
     try {
         $data1 = Parsers\parse($filename1);

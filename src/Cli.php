@@ -23,6 +23,6 @@ function run(): void
 {
     $args = Docopt::handle(DOC);
     if ($args['<firstFile>'] !== null && $args['<secondFile>'] !== null) {
-        echo Differ\genDiff($args['<firstFile>'], $args['<secondFile>']) . PHP_EOL;
+        echo Differ\genDiff($args['<firstFile>'], $args['<secondFile>'], $args['--format']) . PHP_EOL;
     }
 }

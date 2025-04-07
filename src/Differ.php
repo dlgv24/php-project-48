@@ -3,6 +3,7 @@
 namespace Differ\Differ;
 
 use Differ\Parsers;
+use Differ\Formatters;
 
 function sortKeys(mixed &$data): void
 {
@@ -58,16 +59,16 @@ function diff(mixed $data1, mixed $data2): \stdClass|null
     return $result;
 }
 
-function genDiff(string $filename1, string $filename2): mixed
+function genDiff(string $filename1, string $filename2, string $type): mixed
 {
     try {
         $data1 = Parsers\parse($filename1);
         $data2 = Parsers\parse($filename2);
+        $result = diff($data1, $data2);
+        sortKeys($result);
+        $resultStr = Formatters\format($result, $type);
     } catch (\Exception $e) {
         return $e->getMessage();
     }
-
-    $result = diff($data1, $data2);
-    sortKeys($result);
-    return json_encode($result, JSON_PRETTY_PRINT);
+    return $resultStr;
 }

@@ -29,7 +29,7 @@ function parse(string $filename): mixed
             $result = Yaml::parse($content, Yaml::PARSE_OBJECT_FOR_MAP);
             break;
         default:
-            throw new \Exception("Unsupported extension: {$extenstion}!");
+            throw new \Exception("Unsupported extension: {$extension}!");
     }
     return $result;
 }

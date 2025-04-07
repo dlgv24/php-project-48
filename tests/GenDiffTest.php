@@ -8,7 +8,8 @@ use function Differ\Differ\genDiff;
 
 const FIXTURES_DIR = 'tests/fixtures/';
 
-class GenDiffTest extends TestCase {
+class GenDiffTest extends TestCase
+{
     public function testJson()
     {
         $expected = file_get_contents(FIXTURES_DIR . 'expected1-2.json');

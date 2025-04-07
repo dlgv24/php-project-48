@@ -10,9 +10,13 @@ function format(mixed $data, int $indent = 0): string
 {
     if (is_object($data)) {
         $result = s("{\n");
-        $prefix = s(' ')->repeat($indent + INDENT_IN_SPACES);
         foreach ($data as $k => $v) {
             $fmt = format($v, $indent + INDENT_IN_SPACES);
+            if (s($k)->startsWith('+ ') || s($k)->startsWith('- ')) {
+                $prefix = s(' ')->repeat($indent + INDENT_IN_SPACES - 2);
+            } else {
+                $prefix = s(' ')->repeat($indent + INDENT_IN_SPACES);
+            }
             $result = $result->append("{$prefix}{$k}: {$fmt}\n");
         }
         $result = $result->append(s(' ')->repeat($indent))->append('}');

@@ -2,8 +2,6 @@
 
 namespace Differ\Formatters\Plain;
 
-use function Symfony\Component\String\s;
-
 function formatValue(mixed $data): string
 {
     if (is_object($data) || is_array($data)) {
@@ -26,36 +24,48 @@ function formatObject(mixed $data, string $prefix): array
         return [];
     }
 
-    $result = [];
-    foreach ($data as $k => $v) {
-        $ks = s($k);
-        $mns = $ks->startsWith('- ');
-        $pls = $ks->startsWith('+ ');
+    $vars = get_object_vars($data);
+    $keys = array_keys($vars);
 
-        $realKey = $mns || $pls ? (string) $ks->slice(2) : $k;
-        $fullKey = empty($prefix) ? $realKey : implode('.', [$prefix, $realKey]);
+    $result = array_reduce(
+        $keys,
+        function ($carry, $key) use ($vars, $prefix) {
+            $mns = str_starts_with($key, '- ');
+            $pls = str_starts_with($key, '+ ');
 
-        if ($mns) {
-            if (property_exists($data, '+ ' . $realKey)) {
-                $oldValue = formatValue($v);
-                $newValue = formatValue($data->{'+ ' . $realKey});
-                $result[] = "Property '{$fullKey}' was updated. From {$oldValue} to {$newValue}";
-                unset($data->{'+ ' . $realKey});
+            $realKey = $mns || $pls ? mb_substr($key, 2) : $key;
+            $fullKey = $prefix === '' ? $realKey : implode('.', [$prefix, $realKey]);
+
+            if ($mns) {
+                $newKey = '+ ' . $realKey;
+                if (array_key_exists($newKey, $vars)) {
+                    $oldValue = formatValue($vars[$key]);
+                    $newValue = formatValue($vars[$newKey]);
+                    $res = array_merge($carry, ["Property '{$fullKey}' was updated. From {$oldValue} to {$newValue}"]);
+                } else {
+                    $res = array_merge($carry, ["Property '{$fullKey}' was removed"]);
+                }
+            } elseif ($pls) {
+                $newKey = '- ' . $realKey;
+                if (array_key_exists($newKey, $vars)) {
+                    $res = $carry;
+                } else {
+                    $value = formatValue($vars[$key]);
+                    $res = array_merge($carry, ["Property '{$fullKey}' was added with value: {$value}"]);
+                }
             } else {
-                $result[] = "Property '{$fullKey}' was removed";
+                $res = array_merge($carry, formatObject($vars[$key], $fullKey));
             }
-        } elseif ($pls) {
-            $newValue = formatValue($v);
-            $result[] = "Property '{$fullKey}' was added with value: {$newValue}";
-        } else {
-            $result = array_merge($result, formatObject($v, $fullKey));
-        }
-    }
+            return $res;
+        },
+        []
+    );
+
     return $result;
 }
 
 function format(\stdClass $data): string
 {
     $lines = formatObject($data, '');
-    return s("\n")->join($lines);
+    return implode("\n", $lines);
 }

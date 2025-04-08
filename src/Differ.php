@@ -36,29 +36,51 @@ function diff(mixed $data1, mixed $data2): \stdClass|null
         return null;
     }
 
-    $result = new \stdClass();
-    foreach ($data1 as $key => $value) {
-        if (property_exists($data2, $key)) {
-            $diff = diff($value, $data2->$key);
-            if (is_null($diff)) {
-                if ($value === $data2->$key) {
-                    $result->$key = $value;
+    $vars1 = get_object_vars($data1);
+    $vars2 = get_object_vars($data2);
+
+    $keys1 = array_keys($vars1);
+    $keys2 = array_keys($vars2);
+
+    $result1 = array_reduce(
+        $keys1,
+        function ($carry, $key) use ($vars1, $vars2) {
+            if (array_key_exists($key, $vars2)) {
+                $diff = diff($vars1[$key], $vars2[$key]);
+                if (is_null($diff)) {
+                    if ($vars1[$key] === $vars2[$key]) {
+                        $res = [$key => $vars1[$key]];
+                    } else {
+                        $res = [
+                            "- {$key}" => $vars1[$key],
+                            "+ {$key}" => $vars2[$key]
+                        ];
+                    }
                 } else {
-                    $result->{"- $key"} = $value;
-                    $result->{"+ $key"} = $data2->$key;
+                    $res = [$key => $diff];
                 }
             } else {
-                $result->$key = $diff;
+                 $res = ["- {$key}" => $vars1[$key]];
             }
-        } else {
-            $result->{"- $key"} = $value;
-        }
-        unset($data2->$key);
-    }
-    foreach ($data2 as $key => $value) {
-        $result->{"+ $key"} = $value;
-    }
-    return $result;
+            return array_merge($carry, $res);
+        },
+        []
+    );
+
+    $result2 = array_reduce(
+        $keys2,
+        function ($carry, $key) use ($vars1, $vars2) {
+            if (!array_key_exists($key, $vars1)) {
+                $res = ["+ {$key}" => $vars2[$key]];
+            } else {
+                $res = [];
+            }
+            return array_merge($carry, $res);
+        },
+        []
+    );
+
+    return (object) array_merge($result1, $result2);
 }
 
 function genDiff(string $filename1, string $filename2, string $type = 'stylish'): mixed

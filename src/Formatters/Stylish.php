@@ -2,32 +2,41 @@
 
 namespace Differ\Formatters\Stylish;
 
-use function Symfony\Component\String\s;
-
 const INDENT_IN_SPACES = 4;
 
 function format(mixed $data, int $indent = 0): string
 {
     if (is_object($data)) {
-        $result = s("{\n");
-        foreach ($data as $k => $v) {
-            $fmt = format($v, $indent + INDENT_IN_SPACES);
-            if (s($k)->startsWith('+ ') || s($k)->startsWith('- ')) {
-                $prefix = s(' ')->repeat($indent + INDENT_IN_SPACES - 2);
+        $lines = ["{"];
+        $vars = get_object_vars($data);
+        $keys = array_keys($vars);
+
+        for ($i = 0, $len = count($keys); $i < $len; $i++) {
+            $key = $keys[$i];
+            $value = $vars[$key];
+            $fmt = format($value, $indent + INDENT_IN_SPACES);
+            if (str_starts_with($key, '+ ') || str_starts_with($key, '- ')) {
+                $prefix = str_repeat(' ', $indent + INDENT_IN_SPACES - 2);
             } else {
-                $prefix = s(' ')->repeat($indent + INDENT_IN_SPACES);
+                $prefix = str_repeat(' ', $indent + INDENT_IN_SPACES);
             }
-            $result = $result->append("{$prefix}{$k}: {$fmt}\n");
+
+            $lines[] = "{$prefix}{$key}: {$fmt}";
         }
-        $result = $result->append(s(' ')->repeat($indent))->append('}');
+
+        $lines[] = str_repeat(' ', $indent) . "}";
+        $result = implode("\n", $lines);
     } elseif (is_array($data)) {
-        $result = s("[\n");
-        $prefix = s(' ')->repeat($indent + INDENT_IN_SPACES);
-        foreach ($data as $v) {
-            $fmt = format($v, $indent + INDENT_IN_SPACES);
-            $result = $result->append("{$prefix}{$fmt}\n");
+        $lines = ["["];
+        $prefix = str_repeat(' ', $indent + INDENT_IN_SPACES);
+
+        for ($i = 0, $len = count($data); $i < $len; $i++) {
+            $fmt = format($data[$i], $indent + INDENT_IN_SPACES);
+            $lines[] = "{$prefix}{$fmt}";
         }
-        $result = $result->append(s(' ')->repeat($indent))->append(']');
+
+        $lines[] = str_repeat(' ', $indent) . "]";
+        $result = implode("\n", $lines);
     } elseif (is_bool($data)) {
         $result = $data ? 'true' : 'false';
     } elseif (is_null($data)) {

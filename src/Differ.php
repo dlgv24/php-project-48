@@ -4,30 +4,31 @@ namespace Differ\Differ;
 
 use Differ\Parsers;
 use Differ\Formatters;
+use Illuminate\Support\Collection;
 
 function sortKeys(mixed $data): mixed
 {
     if (is_object($data)) {
-        $tmp = (array) $data;
-        uksort(
-            $tmp,
+        $vars = collect(get_object_vars($data))->sortKeysUsing(
             function ($a, $b) {
                 $a = preg_replace('@^[+-] @', '', $a) ?? '';
                 $b = preg_replace('@^[+-] @', '', $b) ?? '';
                 return strcasecmp($a, $b);
             }
         );
-        foreach ($tmp as $key => $_) {
-            $tmp[$key] = sortKeys($tmp[$key]);
-        }
-        return (object) $tmp;
     } elseif (is_array($data)) {
-        foreach ($data as $key => $_) {
-            $data[$key] = sortKeys($data[$key]);
-        }
+        $vars = collect($data);
+    } else {
         return $data;
     }
-    return $data;
+
+    $sorted = $vars->map(fn($var) => sortKeys($var))->all();
+
+    if (is_object($data)) {
+        return (object) $sorted;
+    }
+
+    return $sorted;
 }
 
 function diff(mixed $data1, mixed $data2): \stdClass|null

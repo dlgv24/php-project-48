@@ -11,9 +11,9 @@ function sortKeys(mixed $data): mixed
     if (is_object($data)) {
         $vars = collect(get_object_vars($data))->sortKeysUsing(
             function ($a, $b) {
-                $a = preg_replace('@^[+-] @', '', $a) ?? '';
-                $b = preg_replace('@^[+-] @', '', $b) ?? '';
-                return strcasecmp($a, $b);
+                $x = preg_replace('@^[+-] @', '', $a) ?? '';
+                $y = preg_replace('@^[+-] @', '', $b) ?? '';
+                return strcasecmp($x, $y);
             }
         );
     } elseif (is_array($data)) {

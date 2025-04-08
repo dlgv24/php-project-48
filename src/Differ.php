@@ -5,27 +5,29 @@ namespace Differ\Differ;
 use Differ\Parsers;
 use Differ\Formatters;
 
-function sortKeys(mixed &$data): void
+function sortKeys(mixed $data): mixed
 {
     if (is_object($data)) {
         $tmp = (array) $data;
         uksort(
             $tmp,
             function ($a, $b) {
-                $a = preg_replace('@^[+-] @', '', $a);
-                $b = preg_replace('@^[+-] @', '', $b);
+                $a = preg_replace('@^[+-] @', '', $a) ?? '';
+                $b = preg_replace('@^[+-] @', '', $b) ?? '';
                 return strcasecmp($a, $b);
             }
         );
-        $data = (object) $tmp;
-        foreach ($data as $key => $_) {
-            sortKeys($data->$key);
+        foreach ($tmp as $key => $_) {
+            $tmp[$key] = sortKeys($tmp[$key]);
         }
+        return (object) $tmp;
     } elseif (is_array($data)) {
         foreach ($data as $key => $_) {
-            sortKeys($data[$key]);
+            $data[$key] = sortKeys($data[$key]);
         }
+        return $data;
     }
+    return $data;
 }
 
 function diff(mixed $data1, mixed $data2): \stdClass|null
@@ -65,8 +67,8 @@ function genDiff(string $filename1, string $filename2, string $type = 'stylish')
         $data1 = Parsers\parse($filename1);
         $data2 = Parsers\parse($filename2);
         $result = diff($data1, $data2);
-        sortKeys($result);
-        $resultStr = Formatters\format($result, $type);
+        $sortedResult = sortKeys($result);
+        $resultStr = Formatters\format($sortedResult, $type);
     } catch (\Exception $e) {
         return $e->getMessage();
     }

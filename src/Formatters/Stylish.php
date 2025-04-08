@@ -21,14 +21,14 @@ function format(mixed $data, int $indent = 0): string
                     $prefix = str_repeat(' ', $indent + INDENT_IN_SPACES);
                 }
 
-                $carry[] = "{$prefix}{$key}: {$fmt}";
-                return $carry;
+                $lines = array_merge($carry, ["{$prefix}{$key}: {$fmt}"]);
+                return $lines;
             },
             ['{']
         );
 
-        $lines[] = str_repeat(' ', $indent) . "}";
-        $result = implode("\n", $lines);
+        $allLines = array_merge($lines, [str_repeat(' ', $indent) . "}"]);
+        $result = implode("\n", $allLines);
     } elseif (is_array($data)) {
         $prefix = str_repeat(' ', $indent + INDENT_IN_SPACES);
 
@@ -36,13 +36,13 @@ function format(mixed $data, int $indent = 0): string
             $data,
             function ($carry, $value) use ($indent, $prefix) {
                 $fmt = format($value, $indent + INDENT_IN_SPACES);
-                $carry[] = "{$prefix}{$fmt}";
-                return $carry;
+                $lines = array_merge($carry, ["{$prefix}{$fmt}"]);
+                return $lines;
             },
             ['[']
         );
 
-        $lines[] = str_repeat(' ', $indent) . "]";
+        $allLines = array_merge($lines, [str_repeat(' ', $indent) . "]"]);
         $result = implode("\n", $lines);
     } elseif (is_bool($data)) {
         $result = $data ? 'true' : 'false';
